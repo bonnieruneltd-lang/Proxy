@@ -1,0 +1,51 @@
+# Template workflow. Copy to .github/workflows/ci.yml to enable it.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install (no dependencies)
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Unit and integration tests
+        run: npm test
+
+      - name: CLI smoke tests
+        run: |
+          node bin/wififree.js --version
+          node bin/wififree.js --help
+          node bin/wififree.js pac --pac-host 192.168.1.20 | grep -q 'FindProxyForURL'
+          node bin/wififree.js pac --type socks5 --pac-host 10.0.0.2 | grep -q 'SOCKS5 10.0.0.2:1080'
+
+      - name: Boot the proxy and check endpoints
+        run: |
+          node bin/wififree.js serve --port 8085 --socks-port 1080 --resolver system --log-level warn &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8085/health >/dev/null; then break; fi
+            sleep 0.25
+          done
+          curl -fsS http://127.0.0.1:8085/health
+          curl -fsS http://127.0.0.1:8085/proxy.pac | grep -q 'PROXY 127.0.0.1:8085'
+          curl -fsS http://127.0.0.1:8085/api/status | grep -q '"proxy"'
+          curl -fsS http://127.0.0.1:8085/ | grep -q 'id="address-form"'

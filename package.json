@@ -1,0 +1,37 @@
+{
+  "name": "wififree",
+  "version": "1.0.0",
+  "description": "All-in-one proxy (HTTP/CONNECT + SOCKS5), DNS-over-HTTPS resolver and fast built-in browser for getting past restrictive Wi-Fi networks",
+  "license": "MIT",
+  "author": "wififree contributors",
+  "main": "src/server.js",
+  "bin": {
+    "wififree": "bin/wififree.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node bin/wififree.js serve",
+    "bench": "node bin/wififree.js bench",
+    "pac": "node bin/wififree.js pac",
+    "check": "node bin/wififree.js check",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "proxy",
+    "socks5",
+    "doh",
+    "dns-over-https",
+    "captive-portal",
+    "privacy",
+    "browser"
+  ],
+  "files": [
+    "bin",
+    "src",
+    "public",
+    "README.md",
+    "LICENSE"
+  ]
+}
